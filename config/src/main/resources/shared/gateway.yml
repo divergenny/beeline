@@ -1,0 +1,67 @@
+server:
+  port: 8080
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER:http://localhost:8761/eureka}
+  instance:
+    preferIpAddress: true
+logging:
+  pattern:
+    console: "[%-5level] %d{HH:mm:ss} - %msg%n"
+jwt:
+  token:
+    secret: 1234566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+    expired: 3600000
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        # SWAGGER DOC ROUTES
+        - id: doc-auth-service.yml
+          uri: lb://auth-service.yml
+          predicates:
+            - Path=/auth/v3/api-docs
+          filters:
+            - RewritePath=/auth/(?<path>.*), /$\{path}
+
+        - id: doc-order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/v3/api-docs
+          filters:
+            - RewritePath=/order/(?<path>.*), /$\{path}
+
+        - id: openapi
+          uri: http://localhost:${server.port}
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<path>.*), /$\{path}/v3/api-docs
+
+        # APPLICATION ROUTES
+        - id: auth-service.yml
+          uri: lb://auth-service.yml
+          predicates:
+            - Path=/auth/**
+
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+          filters:
+            - AuthenticationFilter
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: auth
+        url: /v3/api-docs/auth
+      - name: order
+        url: /v3/api-docs/order

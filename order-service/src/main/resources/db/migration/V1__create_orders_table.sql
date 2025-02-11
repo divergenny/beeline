@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS orders (
+    order_id VARCHAR(50) PRIMARY KEY,
+    customer_name VARCHAR(255) NOT NULL,
+    amount DOUBLE PRECISION NOT NULL
+);
